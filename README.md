@@ -10,7 +10,7 @@ is correct, transmission stops.
 As an alternative I developed a simple skimmer for Linux, and
 derived from that, this simple plugin.
 
-The isdea is simple: take 500 FFT's over some region, then select a
+The idea is simple: take 500 FFT's over the incoming samples, then select a
 few (up to 32) successive "bin"s, and use the data in the bin as sample.
 This means 500 samples a second.
 
@@ -32,11 +32,14 @@ The plugin
 The plugin is extremely simple, a single top line with a few
 selectors and 32 lines, one for each bin - if selected.
 
+![overview](/skimmer-plugin.png?raw=true)
+
+
 The top line alows selection of a center bin and a number of bins, equally
 divided in bins below and above the frequency of the center bin.
 
-The function of the rest is obvious
-
+The function of the rest is obvious, the dumpbutton is for
+testing only and is not functioning in this version
 
 
 

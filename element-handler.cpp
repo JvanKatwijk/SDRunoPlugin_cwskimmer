@@ -28,17 +28,17 @@
 	elementHandler::~elementHandler () {}
 
 void	elementHandler::handle_dumpButton	() {
-	if (dumpFile == 0) {
-	   std::string fileName = "d:\dump_channel-" + std::to_string (identity);
-	   dumpFile = fopen (fileName. c_str (), "w");
-	   if (dumpFile != nullptr)
-	      m_form -> setText (5, cwFrequency, identity,
-	                            "file open");
-	}	
-	else {
-	   fclose (dumpFile);
-	   dumpFile = nullptr;
-	}
+//	if (dumpFile == 0) {
+//	   std::string fileName = "d:\dump_channel-" + std::to_string (identity);
+//	   dumpFile = fopen (fileName. c_str (), "w");
+//	   if (dumpFile != nullptr)
+//	      m_form -> setText (5, cwFrequency, identity,
+//	                            "file open");
+//	}	
+//	else {
+//	   fclose (dumpFile);
+//	   dumpFile = nullptr;
+//	}
 }
 	   
 void	elementHandler::reset	() {
