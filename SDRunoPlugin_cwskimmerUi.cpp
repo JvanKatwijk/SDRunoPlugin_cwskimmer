@@ -97,12 +97,20 @@ void	SDRunoPlugin_cwskimmerUi::handle_resetButton	() {
 	m_parent. handle_resetButton ();
 }
 
+void	SDRunoPlugin_cwskimmerUi::handle_dumpButton	() {
+	m_parent. handle_dumpButton ();
+}
+
 void	SDRunoPlugin_cwskimmerUi::set_width		(int n) {
 	m_parent. set_width	(n);
 }
 
 void	SDRunoPlugin_cwskimmerUi::set_center		(int n) {
 	m_parent. set_center	(n);
+}
+
+void	SDRunoPlugin_cwskimmerUi::handle_threshold	(int n) {
+	m_parent. handle_threshold (n);
 }
 
 void	SDRunoPlugin_cwskimmerUi::reset_width		(int n) {

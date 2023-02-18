@@ -37,8 +37,10 @@ public:
 	void Run		();
 	void	setText		(int, int, int, const std::string &);
 	void	handle_resetButton	();
+	void	handle_dumpButton	();
 	void	set_width	(int);
 	void	set_center	(int);
+	void	handle_threshold	(int);
 //
 //	and downwards
 	void	reset_width	(int);
@@ -81,6 +83,11 @@ private:
 	                           nana::rectangle (120, 30, 80, 50)};
 	nana::button	resetButton	{*this,
 	                           nana::rectangle (340, 30, 50, 50)};
+	nana::button	dumpButton	{*this,
+	                           nana::rectangle (400, 30, 50, 50)};
+
+	nana::spinbox	threshold{ *this,
+							   nana::rectangle (210, 30, 80, 50) };
 	nana::listbox	list	{*this,
 	                         nana::rectangle (30, 90, 750, 600)};
 };

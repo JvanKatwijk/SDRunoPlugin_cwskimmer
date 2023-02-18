@@ -288,6 +288,9 @@ void	SDRunoPlugin_cwskimmerForm::Setup () {
 	resetButton. tooltip ("Touching this button will clear the table");
         resetButton. events().click([&]() {handle_resetButton (); });
 
+	dumpButton. caption ("dump");
+        resetButton. events().click([&]() {handle_dumpButton (); });
+
 	width_setter. range (3, 30, 2);
 	width_setter. value (std::to_string (3));
 	width_setter.
@@ -305,6 +308,13 @@ void	SDRunoPlugin_cwskimmerForm::Setup () {
         center_setter. tooltip ("choose centtral bin");
         center_setter. bgcolor (nana::colors::black);
         center_setter. fgcolor (nana::colors::white);
+
+	threshold. range (0, 30, 1);
+	threshold. value (std::to_string (10));
+	threshold.
+	   events (). text_changed ([&](const nana::arg_spinbox &s) {
+                                      handle_threshold (threshold. to_int ());});
+
 }
 
 void	SDRunoPlugin_cwskimmerForm::SettingsButton_Click () {
@@ -326,6 +336,10 @@ void	SDRunoPlugin_cwskimmerForm::handle_resetButton () {
 	m_parent. handle_resetButton ();
 }
 
+void	SDRunoPlugin_cwskimmerForm::handle_dumpButton () {
+	m_parent. handle_dumpButton ();
+}
+
 void	SDRunoPlugin_cwskimmerForm::set_width (int n) {
 	m_parent. set_width (n);
 }
@@ -336,6 +350,10 @@ void	SDRunoPlugin_cwskimmerForm::reset_width	(int n) {
 
 void	SDRunoPlugin_cwskimmerForm::set_center	(int n) {
 	m_parent. set_center (n);
+}
+
+void	SDRunoPlugin_cwskimmerForm::handle_threshold (int n) {
+	m_parent. handle_threshold (n);
 }
 
 void	SDRunoPlugin_cwskimmerForm::reset_center	(int n) {

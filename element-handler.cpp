@@ -7,116 +7,122 @@
 //#include	"radio.h"
 
 #include	"SDRunoPlugin_cwskimmerUi.h"
-
-//#define	QUEUE_LENGTH	32
+//
+//	The samplerate is 500 Ss, i.e. 2 millisecond per sample 
+//	the number of elements for PARIS is 50, so with 
+//	a rate of 13 words per minute, we have 13 * 50 = 650 elements
+//	per minute, i.e. 92.31 millisecond, i.e. 46 samples.
+//	For 30 words a minute 30 * 50 elements per minute, i.e.
+//	1500 elements in 60000 milliseconds, i.e. 40 milliseconds
+//	adding up to 20 samples.
+//
 	elementHandler::elementHandler (SDRunoPlugin_cwskimmerUi *mr,
 	                                int ident): 
-	                             smoothenSamples (6) {
-	this	-> m_form	=  mr;
+	                                    smoothenSamples (3) {
+	this	-> m_form	= mr;
 	this	-> identity	= ident;
+	this	-> dumpFile	= nullptr;
 	reset	();
 }
 
 	elementHandler::~elementHandler () {}
 
+void	elementHandler::handle_dumpButton	() {
+	if (dumpFile == 0) {
+	   std::string fileName = "d:\dump_channel-" + std::to_string (identity);
+	   dumpFile = fopen (fileName. c_str (), "w");
+	   if (dumpFile != nullptr)
+	      m_form -> setText (5, cwFrequency, identity,
+	                            "file open");
+	}	
+	else {
+	   fclose (dumpFile);
+	   dumpFile = nullptr;
+	}
+}
+	   
 void	elementHandler::reset	() {
 	cwCurrent		= 0;
-	agc_peak		= 0;
-	spaceLevel		= 0;
+	peakLevel		= 0;
+	noiseLevel		= 0;
 	avg			= 0;
 	starter			= 0;
 	cwState			= MODE_IDLE;
 	cwText			= std::string ("");
 //
-//	a PARIS bit is 1200 milliseconds, we use a 2 msec interval
-//	so a PARIS bit takes here 600 samples
-//	All length are expressed in samples
+//	times etc expressed in samples
 	currentTime		= 0;
 	fillerP			= 0;
 	emptyP			= 0;
 }
 
-void	elementHandler::process	(float value, int freq, float new_avg) {
+void	elementHandler::process	(float value, int freq, float threshold) {
 
-//	if (identity != 12)
-//	   return;
-//
-	value = smoothenSamples.filter(value);
-	avg	= 0.99 * avg + 0.01 * value;
-	if (starter < 100) {
-	   spaceLevel = 0.5 * avg;
-	   starter ++;
+	threshold	= 0.1 * threshold;
+	value = smoothenSamples.filter (value);
+	if (starter < 500) {
+	   avg	= decayingAverage (avg, value, 500);
+	   peakLevel = 2 * avg;
+	   starter++;
 	   return;
 	}
 
-	if (value > agc_peak)
-	   agc_peak = decayingAverage (agc_peak, value, 25.0);
-	else
-	   agc_peak = decayingAverage (agc_peak, value, 500.0);
+	avg	= decayingAverage (avg, value, 1000);
+	if (value > 2 * avg)
+	   peakLevel = decayingAverage (peakLevel, value, 50.0);
 
 	this	-> cwFrequency	= freq;
 //
 //	the incoming samplerate is 1000 / 2 samples/second,
 //	i.e. app 500 
 	currentTime	+= 1;
+	int duration;
 
 	switch (cwState) {
 	   case MODE_IDLE:
-	      if (value > 0.8 * agc_peak) {
-	         cwStartTime	= currentTime;
+	      if ((value > 0.67 * peakLevel)  &&
+	          (value > threshold * noiseLevel)) {
 	         cwState	= MODE_TONE;
-	         last_peak = value;
+	         cwStartTime	= currentTime;;
 	      }
+	      else 
+	         noiseLevel	= decayingAverage (noiseLevel,
+                                                           value, 500.0);
+
 	      break;
 
 	   case MODE_TONE:
-	      if (value < 0.7 * last_peak) {	// end of tone?
-	          int duration = currentTime - cwStartTime;
-	          if (duration < 3)	// see it as a spike
-	             break;
-	          cwState = MODE_SPACE;
-	          cwStartTime = currentTime;
-	          add (MODE_TONE, duration);
-	          break;
-	      }
-	      else 
-	         last_peak = 0.98 * last_peak + 0.02 * value;
+	      if (value > 0.33 * peakLevel) // continue tone
+	         break;
+	      duration = currentTime - cwStartTime;
+	      if (duration <= 3)
+	         break;			// assume spike
+	      cwState	= MODE_SPACE;
+	      cwStartTime	= currentTime;
+	      add (MODE_TONE, duration);
 	      break;
 
 	   case MODE_SPACE:
-	      if (value > 0.8 * agc_peak) {
+	      if ((value >  0.67 * peakLevel ) &&
+	          (value > threshold * noiseLevel)) {
 	         int duration = currentTime - cwStartTime;
 	         if (duration < 3)	// see it as noise
 	            break;
 	         cwState	= MODE_TONE;
 	         cwStartTime	= currentTime;
 	         add (MODE_SPACE, duration);
-	         last_peak	= value;
-	         break;
 	      }
-	      spaceLevel = decayingAverage (spaceLevel, value, 50.0);
+	      else
+	         noiseLevel	= decayingAverage (noiseLevel,
+                                                           value, 500.0);
 	      break;
 
 	   default: ;
 	}
 }
 
-bool	sorter (int i, int j) {
-	return i < j;
-}
 
 #define	SEARCH_LENGTH	14
-bool	isDot (int value, int norm) {
-	if (value < 0)
-	   fprintf (stderr, "Help 1");
-	return value < 1.5 * norm;
-}
-
-bool	isLongSpace	(int value, int norm) {
-	if (value > 0)
-	   fprintf (stderr, "Help 2");
-	return -value > norm;
-}
 //
 //	The approach we take is to put the durations of the tones and spaces
 //	into a queue. We know that a Morse symbol does not exceed 5
@@ -125,7 +131,9 @@ bool	isLongSpace	(int value, int norm) {
 //	length would be.
 void	elementHandler::add (int soort, int duration) {
 int	bufferElems	= 0;
-
+	if (dumpFile != nullptr)
+	   fprintf (dumpFile, "adding %d %d , peakLevel %f avg %f\n",
+	                                soort, duration, peakLevel, avg);
 	buffer [fillerP] = soort == MODE_SPACE ? -duration : duration;
 	fillerP		= (fillerP + 1) % QUEUE_LENGTH;
 	bufferElems	= (fillerP + QUEUE_LENGTH - emptyP) % QUEUE_LENGTH;
@@ -146,11 +154,13 @@ int	bufferElems	= 0;
 
 	int spaceGuess	= spaceSizes. at (0);
 	int dotGuess	= toneSizes. at (0);
-
+	if (dumpFile != nullptr)
+		fprintf (stderr, "spaceGuess %d, dotGuess %d\n", spaceGuess, dotGuess);
 	
 //	since we know that a symbol takes at most 6 dash/dot combinations,
 //	the longest space should be at least 2 times the shortest
 //
+	
 	if (2 * spaceGuess > spaceSizes.  at (spaceSizes. size () - 1)) {
 	   emptyP = (emptyP + 2) % QUEUE_LENGTH;
 	   return;
@@ -177,9 +187,10 @@ int	bufferElems	= 0;
 	      bbb [i + 1] = 0;
 	      char aaa [4];
 	      lookupToken (bbb, aaa);
-	      fprintf (stderr, "%s  %c\n", bbb, aaa [0]);
+	      if (dumpFile != nullptr)
+	         fprintf (dumpFile, "%s  %c\n", bbb, aaa [0]);
 	      cw_addText (aaa [0]);
-	      if (space > 3 * spaceGuess) {
+	      if (space > 2.5 * spaceGuess) {
 	         cw_addText (' ');
 	      }
 	      emptyP = (emptyP + 2 * i + 2) % QUEUE_LENGTH;
@@ -294,6 +305,6 @@ void	elementHandler::reset	(int  n) {
 }
 
 void	elementHandler::set_noiseLevel	(int n) {
-	noiseLevel = n;
+	
 }
 

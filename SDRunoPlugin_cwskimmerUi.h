@@ -32,8 +32,10 @@ public:
 
 	void	setText			(int, int, int, const std::string &);
 	void	handle_resetButton	();
+	void	handle_dumpButton	();
 	void	set_width		(int);
 	void	set_center		(int);
+	void	handle_threshold	(int);
 //
 //	going down:
 	void	reset_width		(int);

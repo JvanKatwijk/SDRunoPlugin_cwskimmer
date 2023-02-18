@@ -4,10 +4,10 @@
 
 #include	<stdint.h>
 #include	<stdio.h>
-#include		".\utilities.h"
+#include	".\utilities.h"
 #include	<cstring>
 #include	<string>
-#include "SDRunoPlugin_cwskimmerUi.h"
+#include	"SDRunoPlugin_cwskimmerUi.h"
 
 #define	MODE_IDLE		0100
 #define	MODE_TONE		0200
@@ -33,20 +33,19 @@ public:
 	void	reset		();
 	void	process		(float value, int, float avg);
 	void	set_noiseLevel	(int);
+	void	handle_dumpButton	();
 private:
 	average		smoothenSamples;
 	float		decayingAverage (float old,
 	                                 float input, float weight);
 
-	void	add		(int, int);
+	void		add		(int, int);
 	SDRunoPlugin_cwskimmerUi	*m_form;
 	int		identity;
-	float		agc_peak;
 	float		avg;
-	float		spaceLevel;
-	int		noiseLevel;
 	float		value;
-	float		last_peak;
+	float		peakLevel;
+	float		noiseLevel;
 	int		cwState;
 	int		currentTime;
 	int		cwCurrent;
@@ -59,6 +58,7 @@ private:
 	int		emptyP;
 	int		buffer [QUEUE_LENGTH];
 
+	FILE		*dumpFile;
 
 	void		cw_addText	(char c);
 	void		cw_clrText	();
