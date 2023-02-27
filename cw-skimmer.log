@@ -1,9 +1,9 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=pdflatex 2022.1.8)  7 DEC 2022 16:03
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=pdflatex 2022.1.8)  27 FEB 2023 17:58
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
-**cw-decoder-2.tex
-(./cw-decoder-2.tex
+**cw-skimmer.tex
+(./cw-skimmer.tex
 LaTeX2e <2020-10-01> patch level 4
 L3 programming layer <2021-05-07>
 (/usr/share/texlive/texmf-dist/tex/latex/base/article.cls
@@ -73,8 +73,8 @@ File: l3backend-pdftex.def 2021-05-07 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count187
 \l__pdf_internal_box=\box47
 )
-(./cw-decoder-2.aux)
-\openout1 = `cw-decoder-2.aux'.
+(./cw-skimmer.aux)
+\openout1 = `cw-skimmer.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 31.
 LaTeX Font Info:    ... okay on input line 31.
@@ -131,10 +131,10 @@ LaTeX Font Info:    Trying to load font information for U+lasy on input line 41
 (/usr/share/texlive/texmf-dist/tex/latex/base/ulasy.fd
 File: ulasy.fd 1998/08/17 v2.2e LaTeX symbol font definitions
 )
-<skimmer.png, id=1, 1445.4pt x 813.0375pt>
-File: skimmer.png Graphic file (type png)
-<use skimmer.png>
-Package pdftex.def Info: skimmer.png  used on input line 45.
+<skimmer-plugin.png, id=1, 1445.4pt x 813.0375pt>
+File: skimmer-plugin.png Graphic file (type png)
+<use skimmer-plugin.png>
+Package pdftex.def Info: skimmer-plugin.png  used on input line 45.
 (pdftex.def)             Requested size: 455.24408pt x 256.07095pt.
 
 Underfull \hbox (badness 10000) in paragraph at lines 43--47
@@ -176,8 +176,8 @@ ed
 
 
 pdfTeX warning: pdflatex (file /usr/share/texlive/texmf-var/fonts/map/pdftex/up
-dmap/pdftex.map): fontmap entry for `rpxpplbo' already exists, duplicates ignor
-ed
+dmap/pdftex.map): invalid entry for `rpxpplbo': SlantFont/ExtendFont can be use
+d only with embedded Type1 fonts
 
 
 pdfTeX warning: pdflatex (file /usr/share/texlive/texmf-var/fonts/map/pdftex/up
@@ -191,8 +191,8 @@ ed
 
 
 pdfTeX warning: pdflatex (file /usr/share/texlive/texmf-var/fonts/map/pdftex/up
-dmap/pdftex.map): fontmap entry for `rpxpplro' already exists, duplicates ignor
-ed
+dmap/pdftex.map): invalid entry for `rpxpplro': SlantFont/ExtendFont can be use
+d only with embedded Type1 fonts
 
 
 pdfTeX warning: pdflatex (file /usr/share/texlive/texmf-var/fonts/map/pdftex/up
@@ -201,8 +201,8 @@ d
 
 
 pdfTeX warning: pdflatex (file /usr/share/texlive/texmf-var/fonts/map/pdftex/up
-dmap/pdftex.map): invalid entry for `rtxphvbo': SlantFont/ExtendFont can be use
-d only with embedded Type1 fonts
+dmap/pdftex.map): fontmap entry for `rtxphvbo' already exists, duplicates ignor
+ed
 
 
 pdfTeX warning: pdflatex (file /usr/share/texlive/texmf-var/fonts/map/pdftex/up
@@ -211,8 +211,8 @@ d
 
 
 pdfTeX warning: pdflatex (file /usr/share/texlive/texmf-var/fonts/map/pdftex/up
-dmap/pdftex.map): invalid entry for `rtxphvro': SlantFont/ExtendFont can be use
-d only with embedded Type1 fonts
+dmap/pdftex.map): fontmap entry for `rtxphvro' already exists, duplicates ignor
+ed
 
 
 pdfTeX warning: pdflatex (file /usr/share/texlive/texmf-var/fonts/map/pdftex/up
@@ -226,8 +226,8 @@ ed
 
 
 pdfTeX warning: pdflatex (file /usr/share/texlive/texmf-var/fonts/map/pdftex/up
-dmap/pdftex.map): invalid entry for `rtxptmbo': SlantFont/ExtendFont can be use
-d only with embedded Type1 fonts
+dmap/pdftex.map): fontmap entry for `rtxptmbo' already exists, duplicates ignor
+ed
 
 
 pdfTeX warning: pdflatex (file /usr/share/texlive/texmf-var/fonts/map/pdftex/up
@@ -241,39 +241,34 @@ ed
 
 
 pdfTeX warning: pdflatex (file /usr/share/texlive/texmf-var/fonts/map/pdftex/up
-dmap/pdftex.map): invalid entry for `rtxptmro': SlantFont/ExtendFont can be use
-d only with embedded Type1 fonts
-} <./skimmer.png>]
-<skimmer-2.png, id=16, 575.90157pt x 490.83376pt>
-File: skimmer-2.png Graphic file (type png)
-<use skimmer-2.png>
-Package pdftex.def Info: skimmer-2.png  used on input line 92.
-(pdftex.def)             Requested size: 170.71652pt x 145.4987pt.
- [2 <./skimmer-2.png>] [3] (./cw-decoder-2.aux) ) 
+dmap/pdftex.map): fontmap entry for `rtxptmro' already exists, duplicates ignor
+ed
+} <./skimmer-plugin.png>] [2] (./cw-skimmer.aux) ) 
 Here is how much of TeX's memory you used:
- 1816 strings out of 480806
- 25322 string characters out of 5905152
- 308121 words of memory out of 6000000
- 19189 multiletter control sequences out of 15000+600000
- 413058 words of font info for 66 fonts, out of 8000000 for 9000
+ 1811 strings out of 480806
+ 25248 string characters out of 5905152
+ 309117 words of memory out of 6000000
+ 19184 multiletter control sequences out of 15000+600000
+ 413404 words of font info for 67 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 55i,6n,62p,209b,264s stack positions out of 5000i,500n,10000p,200000b,80000s
-{/usr/share/texlive/texmf-dist
-/fonts/enc/dvips/cm-super/cm-super-ts1.enc}{/usr/share/texlive/texmf-dist/fonts
-/enc/dvips/lm/lm-rep-cmrm.enc}{/usr/share/texlive/texmf-dist/fonts/enc/dvips/lm
-/lm-rep-cmit.enc}</usr/share/texlive/texmf-dist/fonts/type1/public/lm/lmbx12.pf
-b></usr/share/texlive/texmf-dist/fonts/type1/public/lm/lmr10.pfb></usr/share/te
-xlive/texmf-dist/fonts/type1/public/lm/lmr12.pfb></usr/share/texlive/texmf-dist
-/fonts/type1/public/lm/lmr17.pfb></usr/share/texlive/texmf-dist/fonts/type1/pub
-lic/lm/lmr8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/lm/lmr9.pfb><
-/usr/share/texlive/texmf-dist/fonts/type1/public/lm/lmri12.pfb></usr/share/texl
-ive/texmf-dist/fonts/type1/public/cm-super/sfrm0600.pfb></usr/share/texlive/tex
-mf-dist/fonts/type1/public/cm-super/sfrm0800.pfb></usr/share/texlive/texmf-dist
-/fonts/type1/public/cm-super/sfrm1000.pfb>
-Output written on cw-decoder-2.pdf (3 pages, 1135093 bytes).
+ 55i,6n,62p,207b,264s stack positions out of 5000i,500n,10000p,200000b,80000s
+{/usr/share/texlive/texmf-dis
+t/fonts/enc/dvips/cm-super/cm-super-ts1.enc}{/usr/share/texlive/texmf-dist/font
+s/enc/dvips/lm/lm-rep-cmrm.enc}{/usr/share/texlive/texmf-dist/fonts/enc/dvips/l
+m/lm-rep-cmit.enc}</usr/share/texlive/texmf-dist/fonts/type1/public/lm/lmbx12.p
+fb></usr/share/texlive/texmf-dist/fonts/type1/public/lm/lmr10.pfb></usr/share/t
+exlive/texmf-dist/fonts/type1/public/lm/lmr12.pfb></usr/share/texlive/texmf-dis
+t/fonts/type1/public/lm/lmr17.pfb></usr/share/texlive/texmf-dist/fonts/type1/pu
+blic/lm/lmr8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/lm/lmr9.pfb>
+</usr/share/texlive/texmf-dist/fonts/type1/public/lm/lmri10.pfb></usr/share/tex
+live/texmf-dist/fonts/type1/public/lm/lmri12.pfb></usr/share/texlive/texmf-dist
+/fonts/type1/public/cm-super/sfrm0600.pfb></usr/share/texlive/texmf-dist/fonts/
+type1/public/cm-super/sfrm0800.pfb></usr/share/texlive/texmf-dist/fonts/type1/p
+ublic/cm-super/sfrm1000.pfb>
+Output written on cw-skimmer.pdf (2 pages, 1009695 bytes).
 PDF statistics:
- 61 PDF objects out of 1000 (max. 8388607)
+ 59 PDF objects out of 1000 (max. 8388607)
  42 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 11 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 6 words of extra memory for PDF output out of 10000 (max. 10000000)
 

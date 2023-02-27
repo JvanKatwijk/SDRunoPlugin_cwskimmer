@@ -207,10 +207,6 @@ void	SDRunoPlugin_cwskimmer::handle_resetButton	() {
 
 }
 
-void	SDRunoPlugin_cwskimmer::handle_dumpButton	() {
-	workVector [center] -> handle_dumpButton ();
-}
-
 void	SDRunoPlugin_cwskimmer::handle_threshold	(int n) {
 	the_threshold	= n;
 }

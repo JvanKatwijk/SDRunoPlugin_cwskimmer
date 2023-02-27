@@ -43,7 +43,6 @@ public:
 	void HandleEvent		(const UnoEvent& ev) override;
 	void	reset			();
 	void	handle_resetButton	();
-	void	handle_dumpButton	();
 	void	set_width		(int);
 	void	set_center		(int);
 	void	handle_threshold	(int);

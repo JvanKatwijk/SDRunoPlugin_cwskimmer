@@ -35,11 +35,10 @@ selectors and 32 lines, one for each bin - if selected.
 ![overview](/skimmer-plugin.png?raw=true)
 
 
-The top line alows selection of a center bin and a number of bins, equally
+The top line shows spinboces for selection of a center bin and a number of bins, equally
 divided in bins below and above the frequency of the center bin.
 
 The function of the rest is obvious, the dumpbutton is for
 testing only and is not functioning in this version
-
 
 

@@ -288,9 +288,6 @@ void	SDRunoPlugin_cwskimmerForm::Setup () {
 	resetButton. tooltip ("Touching this button will clear the table");
         resetButton. events().click([&]() {handle_resetButton (); });
 
-	dumpButton. caption ("dump");
-        resetButton. events().click([&]() {handle_dumpButton (); });
-
 	width_setter. range (3, 30, 2);
 	width_setter. value (std::to_string (3));
 	width_setter.
@@ -334,10 +331,6 @@ void	SDRunoPlugin_cwskimmerForm::setText	(int index,
 
 void	SDRunoPlugin_cwskimmerForm::handle_resetButton () {
 	m_parent. handle_resetButton ();
-}
-
-void	SDRunoPlugin_cwskimmerForm::handle_dumpButton () {
-	m_parent. handle_dumpButton ();
 }
 
 void	SDRunoPlugin_cwskimmerForm::set_width (int n) {

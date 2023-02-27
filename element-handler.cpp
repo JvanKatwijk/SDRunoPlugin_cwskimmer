@@ -7,6 +7,13 @@
 //#include	"radio.h"
 
 #include	"SDRunoPlugin_cwskimmerUi.h"
+
+
+static inline
+float   get_db (float x) { 
+        return 20 * log10 ((x + 0.01) / (float)(256));
+}
+
 //
 //	The samplerate is 500 Ss, i.e. 2 millisecond per sample 
 //	the number of elements for PARIS is 50, so with 
@@ -21,30 +28,16 @@
 	                                    smoothenSamples (3) {
 	this	-> m_form	= mr;
 	this	-> identity	= ident;
-	this	-> dumpFile	= nullptr;
 	reset	();
 }
 
 	elementHandler::~elementHandler () {}
 
-void	elementHandler::handle_dumpButton	() {
-//	if (dumpFile == 0) {
-//	   std::string fileName = "d:\dump_channel-" + std::to_string (identity);
-//	   dumpFile = fopen (fileName. c_str (), "w");
-//	   if (dumpFile != nullptr)
-//	      m_form -> setText (5, cwFrequency, identity,
-//	                            "file open");
-//	}	
-//	else {
-//	   fclose (dumpFile);
-//	   dumpFile = nullptr;
-//	}
-}
-	   
 void	elementHandler::reset	() {
 	cwCurrent		= 0;
 	peakLevel		= 0;
 	noiseLevel		= 0;
+	currentPeak		= 0;
 	avg			= 0;
 	starter			= 0;
 	cwState			= MODE_IDLE;
@@ -68,6 +61,8 @@ void	elementHandler::process	(float value, int freq, float threshold) {
 	}
 
 	avg	= decayingAverage (avg, value, 1000);
+	if (peakLevel == 0)
+	   peakLevel = 2 * avg;
 	if (value > 2 * avg)
 	   peakLevel = decayingAverage (peakLevel, value, 50.0);
 
@@ -76,41 +71,44 @@ void	elementHandler::process	(float value, int freq, float threshold) {
 //	the incoming samplerate is 1000 / 2 samples/second,
 //	i.e. app 500 
 	currentTime	+= 1;
-	int duration;
 
 	switch (cwState) {
 	   case MODE_IDLE:
 	      if ((value > 0.67 * peakLevel)  &&
-	          (value > threshold * noiseLevel)) {
-	         cwState	= MODE_TONE;
+	          (get_db (value) > threshold + get_db (noiseLevel))) {
+	         currentPeak	= value;
+	         cwState	= MODE_IN_TONE;
 	         cwStartTime	= currentTime;;
 	      }
 	      else 
 	         noiseLevel	= decayingAverage (noiseLevel,
                                                            value, 500.0);
-
 	      break;
 
-	   case MODE_TONE:
-	      if (value > 0.33 * peakLevel) // continue tone
-	         break;
-	      duration = currentTime - cwStartTime;
-	      if (duration <= 3)
-	         break;			// assume spike
-	      cwState	= MODE_SPACE;
+	   case MODE_IN_TONE:
+//	      if (value > 0.33 * peakLevel)
+	      if (value > 0.5 * currentPeak)
+	         break;			/* kust go on	*/
+	      
+	      if (currentTime - cwStartTime < 3)	// a spike?
+	         break;		
+	
+	      noiseLevel	= decayingAverage (noiseLevel, value, 500.0);
+	      add (MODE_IN_TONE, currentTime - cwStartTime);
+	      cwState		= MODE_SPACE;
 	      cwStartTime	= currentTime;
-	      add (MODE_TONE, duration);
 	      break;
 
 	   case MODE_SPACE:
 	      if ((value >  0.67 * peakLevel ) &&
-	          (value > threshold * noiseLevel)) {
+	          (get_db (value) > threshold + get_db (noiseLevel))) {
 	         int duration = currentTime - cwStartTime;
 	         if (duration < 3)	// see it as noise
 	            break;
-	         cwState	= MODE_TONE;
-	         cwStartTime	= currentTime;
+	         currentPeak		= value;
 	         add (MODE_SPACE, duration);
+	         cwState		= MODE_IN_TONE;
+	         cwStartTime		= currentTime;
 	      }
 	      else
 	         noiseLevel	= decayingAverage (noiseLevel,
@@ -131,9 +129,12 @@ void	elementHandler::process	(float value, int freq, float threshold) {
 //	length would be.
 void	elementHandler::add (int soort, int duration) {
 int	bufferElems	= 0;
-	if (dumpFile != nullptr)
-	   fprintf (dumpFile, "adding %d %d , peakLevel %f avg %f\n",
-	                                soort, duration, peakLevel, avg);
+	
+	if (duration == 0) {
+	   m_form -> setText (identity, cwFrequency, WPM, "foute boel");
+	   reset (0);
+	}
+
 	buffer [fillerP] = soort == MODE_SPACE ? -duration : duration;
 	fillerP		= (fillerP + 1) % QUEUE_LENGTH;
 	bufferElems	= (fillerP + QUEUE_LENGTH - emptyP) % QUEUE_LENGTH;
@@ -149,14 +150,29 @@ int	bufferElems	= 0;
 	   else
 	      toneSizes. push_back (buffer [(emptyP + i) % QUEUE_LENGTH]);
 	}
+
+	if ((spaceSizes. size () == 0) || (toneSizes. size () == 0)) {
+	   m_form -> setText (identity, cwFrequency, WPM, "foute boel");
+           reset (1);
+	   return;
+	}
 	std::sort (spaceSizes. begin (), spaceSizes. end ());
 	std::sort (toneSizes. begin (), toneSizes. end ());
 
 	int spaceGuess	= spaceSizes. at (0);
 	int dotGuess	= toneSizes. at (0);
-	if (dumpFile != nullptr)
-		fprintf (stderr, "spaceGuess %d, dotGuess %d\n", spaceGuess, dotGuess);
-	
+
+	if ((dotGuess < 10) || (spaceGuess < 10)) {
+	   emptyP = (emptyP + 2) % QUEUE_LENGTH;
+	   return;
+        }
+
+	float ratio     = (float)dotGuess / (float)spaceGuess;
+        if ((ratio < 0.5) || (ratio > 1.5)) {   // garbage
+           emptyP = (emptyP + 2) % QUEUE_LENGTH;
+           return;
+        }
+
 //	since we know that a symbol takes at most 6 dash/dot combinations,
 //	the longest space should be at least 2 times the shortest
 //
@@ -165,21 +181,46 @@ int	bufferElems	= 0;
 	   emptyP = (emptyP + 2) % QUEUE_LENGTH;
 	   return;
 	}
-	WPM	= 600 / spaceGuess;
-	if ((WPM < 5) || (WPM > 40)) {
+	
+	std::vector<int> message;
+	for (int i = 0; i < QUEUE_LENGTH / 2; i ++) {
+	   message . push_back (buffer [(emptyP + 2 * i) % QUEUE_LENGTH]);
+	   message . push_back ( - buffer [(emptyP + 2 * i + 1) % QUEUE_LENGTH]);
+	   if (message [2 * i + 1] > 2.5 * spaceGuess)
+	      break;
+	} 
+	if (message. size () == QUEUE_LENGTH) {
+	   emptyP = (emptyP + 2) % QUEUE_LENGTH;
+	   return;	// seems garbage only
+	}
+//
+//	Since the border between the signal strengths denoting a mark
+//	and the ones denoting a space is not hard, we use the
+//	actual size of the space as indicator and compute
+//	from there what the size of a dot should be
+	int spaceSize = 0;
+	for (int i = 0; i < message. size () / 2 - 1; i ++)
+	   spaceSize += message [2 * i + 1];
+	if (spaceSize == 0)	// only a dot or a dash
+	   spaceSize = spaceGuess;
+	else
+	   spaceSize /= message. size () / 2 - 1;
+
+	float dotCorrection = (float)spaceSize / dotGuess;
+
+	WPM	= 600 / spaceSize;
+	if ((WPM < 5) || (WPM > 45)) {
 	   emptyP = (emptyP + 2) % QUEUE_LENGTH;
 	   return;
 	}
-	   
 //	it is known that Morse symbols are at most 5 dash/dot combis
 	for (int i = 0; i < 6; i ++) {
 	   int space = -buffer [(emptyP + 2 * i + 1) % QUEUE_LENGTH];
-	   if (space > 2.5 * spaceGuess) {
+	   if (space > 2 * spaceSize) {	// end of token
 	      char bbb [10];
 	      for (int j = 0; j <= i; j ++) {
-	         int xx = buffer [(emptyP + 2 * j) % QUEUE_LENGTH];
-//	         fprintf (stderr, "%d ", xx);
-	         if (xx > 1.5 * spaceGuess)
+	         int dataElem = buffer [(emptyP + 2 * j) % QUEUE_LENGTH];
+	         if (dataElem * dotCorrection > 2 * spaceGuess)
 	            bbb [j] = '_';
 	         else
 	            bbb [j] = '.';
@@ -187,10 +228,8 @@ int	bufferElems	= 0;
 	      bbb [i + 1] = 0;
 	      char aaa [4];
 	      lookupToken (bbb, aaa);
-	      if (dumpFile != nullptr)
-	         fprintf (dumpFile, "%s  %c\n", bbb, aaa [0]);
 	      cw_addText (aaa [0]);
-	      if (space > 2.5 * spaceGuess) {
+	      if (space > 4 * spaceSize) {
 	         cw_addText (' ');
 	      }
 	      emptyP = (emptyP + 2 * i + 2) % QUEUE_LENGTH;
@@ -305,6 +344,5 @@ void	elementHandler::reset	(int  n) {
 }
 
 void	elementHandler::set_noiseLevel	(int n) {
-	
 }
 

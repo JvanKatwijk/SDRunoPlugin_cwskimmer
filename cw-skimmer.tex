@@ -29,7 +29,7 @@
 \newcommand{\notrans}[3]{#1 \stackrel{#2}{\not\! \longrightarrow} #3}
 \bibliographystyle{plain}
 \begin{document}
-\title{An experimental plugin for decoding CW\\
+\title{A simple CW skimmer\\
 {\small user's guide {\footnote {\copyright J van Katwijk}}\\
 Revised edition of the plugin}}
 \author{
@@ -42,11 +42,11 @@ The Netherlands\\
 %\baselineskip 22pt
 \ \\
 \ \\
-\includegraphics[width=160mm]{skimmer.png}
+\includegraphics[width=160mm]{skimmer-plugin.png}
 \ \\
 \section{Background}
-The biggest problem I have when using the CW decoder plugin is tuning. 
-After all, tuning shoud be very accurate and manually tuning is not
+The biggest problem I have when using the CW decoder plugin is {\em tuning
+in time}.  After all, tuning shoud be very accurate and manually tuning is not
 easy with all the flickerings on the screen of signals "of" and "off"
 \par
 While the CW decoder plugin provided some support for tuning correction,
@@ -54,24 +54,30 @@ I was not very happy with it.
 \par
 Therefore a completely different approach was taken in this "skimmer" type
 plugin.
-Basically it is simple, the incoming samples, rate 192000, are per segment of
-2 milliseconds, i.e. 2 * 192 samples, fed into an FFT processor with 
-2048 "bin"s.
+Basically it is simple, the incoming samples, rate 192000, are per
+timeslot of 2 milliseconds, i.e. 2 * 192 samples, fed into
+an FFT processor with 2048 "bin"s.
 Each bin then shows the "energy" of the signal in a frequency band with
 a width of 192000 / 2048, i.e. slightly less than 100 Hz.
 \par
-Then from some specified bins the data is sent to a decoder, 
-the samplerate of that data is then obviously app 500 samples a second.
+Then from a set of selected bins the data is sent to a decoder, one
+decoder for each stream.
+The samplerate of that data is then obviously app 500 samples a second.
 Note that a 30 WPM signal takes app 40 mseconds per dot, so that is covered
 by app 20 samples.
 \par
-This plugin provides means for decoding the signal from a group of successive
-bins.
+The decoding process is changed as well, a sequence of
+messages, each message encoded as a number telling the amount of samples with
+either a low or high amplitude, are passed on to an actual decoder.
+In this decoder an estimate is made of the length of the dots and spaces,
+after which an attempt is made to extract a symbol.
+\par
 \section{The plugin}
-The plugin itself is straightforward, and contains a top line with two
-selectors and a button, and a field with 32 lines.
-The area of interest is a region of 32 bins (i.e. about 3 Khz)
-around the selected frequency.
+The plugin itself is straightforward; its controls are in the
+top line. That line contains two selectors and  a button.
+The text part of the widget contains 32 lines.
+The area of interest is a user selected region of 3 or more bins, with one line
+for each bin. The user may select the center bin and a number of bins.
 \par
 Each line contains 4 elements
 \begin{itemize}
@@ -89,7 +95,6 @@ are selected for decoding the data (always an odd number);
 \item the left selector, with as default value 6, tells the line number
 of the bin that is central in the selected bins.
 \end{itemize}
-\includegraphics[width=60mm]{skimmer-2.png}
 \section{Copyright}
 The code for this plugin is free software; you can redistribute
 it and/or modify it under the terms of the GNU Library General Public

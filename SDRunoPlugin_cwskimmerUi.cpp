@@ -97,10 +97,6 @@ void	SDRunoPlugin_cwskimmerUi::handle_resetButton	() {
 	m_parent. handle_resetButton ();
 }
 
-void	SDRunoPlugin_cwskimmerUi::handle_dumpButton	() {
-	m_parent. handle_dumpButton ();
-}
-
 void	SDRunoPlugin_cwskimmerUi::set_width		(int n) {
 	m_parent. set_width	(n);
 }

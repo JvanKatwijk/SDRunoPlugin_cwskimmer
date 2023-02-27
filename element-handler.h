@@ -10,8 +10,8 @@
 #include	"SDRunoPlugin_cwskimmerUi.h"
 
 #define	MODE_IDLE		0100
-#define	MODE_TONE		0200
-#define	MODE_SPACE		0500
+#define	MODE_IN_TONE		0200
+#define	MODE_SPACE		0400
 
 #define	CW_DOT_REPRESENTATION	'.'
 #define	CW_DASH_REPRESENTATION	'_'
@@ -33,7 +33,6 @@ public:
 	void	reset		();
 	void	process		(float value, int, float avg);
 	void	set_noiseLevel	(int);
-	void	handle_dumpButton	();
 private:
 	average		smoothenSamples;
 	float		decayingAverage (float old,
@@ -46,6 +45,7 @@ private:
 	float		value;
 	float		peakLevel;
 	float		noiseLevel;
+	float		currentPeak;
 	int		cwState;
 	int		currentTime;
 	int		cwCurrent;
@@ -57,8 +57,6 @@ private:
 	int		fillerP;
 	int		emptyP;
 	int		buffer [QUEUE_LENGTH];
-
-	FILE		*dumpFile;
 
 	void		cw_addText	(char c);
 	void		cw_clrText	();
