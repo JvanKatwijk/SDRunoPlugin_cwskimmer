@@ -38,12 +38,13 @@ public:
 	void	setText		(int, int, int, const std::string &);
 	void	handle_resetButton	();
 	void	set_width	(int);
-	void	set_center	(int);
+	void	set_modeSelector	(const std::string &);
 	void	handle_threshold	(int);
 //
 //	and downwards
 	void	reset_width	(int);
 	void	reset_center	(int);
+	void	show_frequencyRange	(int, int);
 	
 private:
 
@@ -76,14 +77,18 @@ private:
 	IUnoPluginController & m_controller;
                                     
         std::string messageLabel;
-	nana::spinbox	center_setter	{*this,
-	                           nana::rectangle (30, 30, 80, 50)};
 	nana::spinbox	width_setter	{*this,
-	                           nana::rectangle (120, 30, 80, 50)};
+	                           nana::rectangle (40, 30, 80, 50)};
 	nana::button	resetButton	{*this,
-	                           nana::rectangle (340, 30, 50, 50)};
+	                           nana::rectangle (140, 30, 50, 50)};
 	nana::spinbox	threshold	{ *this,
 				   nana::rectangle (210, 30, 80, 50) };
+	nana::combox	modeSelector	{*this,
+				   nana::rectangle (310, 30, 80, 50) };
+	nana::label	minFreq		{*this,
+				   nana::rectangle (410, 30, 60, 50) };
+	nana::label	maxFreq		{*this,
+				   nana::rectangle (480, 30, 60, 50) };
 	nana::listbox	list	{*this,
 	                         nana::rectangle (30, 90, 750, 600)};
 };

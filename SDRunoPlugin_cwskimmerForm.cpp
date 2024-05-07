@@ -216,7 +216,7 @@ void	SDRunoPlugin_cwskimmerForm::Setup () {
 	// Load X and Y location for the form from the ini file (if exists)
 	int posX = m_parent.LoadX();
 	int posY = m_parent.LoadY();
-	move(posX, posY);
+	move (posX, posY);
 
 	// This code sets the plugin size, title and what to do when the X is pressed
 	size(nana::size(formWidth, formHeight));
@@ -276,6 +276,19 @@ void	SDRunoPlugin_cwskimmerForm::Setup () {
 	sett_button.transparent(true);
 
 	// TODO: Extra Form code goes here
+	minFreq. transparent (true);
+	maxFreq. transparent (true);
+	minFreq. fgcolor (nana::colors::white);
+	maxFreq. fgcolor (nana::colors::white);
+
+	modeSelector. push_back ("512");
+	modeSelector. push_back ("1024");
+	modeSelector. push_back ("2048");
+	modeSelector. option (1);
+	modeSelector. events(). selected ([&](const nana::arg_combox &ar_cbx){
+                        set_modeSelector (ar_cbx. widget. caption ());});
+	modeSelector.tooltip("select between FFT sizes's");
+
 	list.append_header ("index", 40);
 	list.append_header ("frequency", 80);
 	list.append_header ("WPM", 40);
@@ -297,15 +310,7 @@ void	SDRunoPlugin_cwskimmerForm::Setup () {
         width_setter. bgcolor (nana::colors::black);
         width_setter. fgcolor (nana::colors::white);
 
-	center_setter. range (10, 20, 1);
-	center_setter. value (std::to_string (16));
-	center_setter.
-           events (). text_changed ([&](const nana::arg_spinbox &s) {
-                                      set_center (center_setter. to_int ());});
-        center_setter. tooltip ("choose centtral bin");
-        center_setter. bgcolor (nana::colors::black);
-        center_setter. fgcolor (nana::colors::white);
-
+	
 	threshold. range (0, 30, 1);
 	threshold. value (std::to_string (10));
 	threshold.
@@ -341,15 +346,14 @@ void	SDRunoPlugin_cwskimmerForm::reset_width	(int n) {
 	width_setter. value (std::to_string (n));
 }
 
-void	SDRunoPlugin_cwskimmerForm::set_center	(int n) {
-	m_parent. set_center (n);
-}
-
 void	SDRunoPlugin_cwskimmerForm::handle_threshold (int n) {
 	m_parent. handle_threshold (n);
 }
-
-void	SDRunoPlugin_cwskimmerForm::reset_center	(int n) {
-	center_setter. value (std::to_string (n));
+void	SDRunoPlugin_cwskimmerForm::set_modeSelector (const std::string &s) {
+	m_parent. handle_modeSwitch (std::stoi (s));
 }
 
+void	SDRunoPlugin_cwskimmerForm::show_frequencyRange	(int low, int high) {
+	minFreq. caption (std::to_string (low) + "KHz");
+	maxFreq. caption (std::to_string (high) + "KHz");
+}

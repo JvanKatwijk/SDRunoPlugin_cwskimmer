@@ -33,12 +33,12 @@ public:
 	void	setText			(int, int, int, const std::string &);
 	void	handle_resetButton	();
 	void	set_width		(int);
-	void	set_center		(int);
+	void	handle_modeSwitch	(int);
 	void	handle_threshold	(int);
 //
 //	going down:
 	void	reset_width		(int);
-	void	reset_center		(int);
+	void	show_frequencyRange	(int, int);
 
 private:
 	

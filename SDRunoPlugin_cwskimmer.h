@@ -16,7 +16,6 @@
 #include	<complex>
 
 class elementHandler;
-#define	FFT_SIZE	1024
 
 class SDRunoPlugin_cwskimmer : public IUnoPlugin,
 	                          public IUnoStreamProcessor,
@@ -44,8 +43,8 @@ public:
 	void	reset			();
 	void	handle_resetButton	();
 	void	set_width		(int);
-	void	set_center		(int);
 	void	handle_threshold	(int);
+	void	handle_modeSwitch	(int);
 
 private:
 	IUnoPluginController *m_controller;
@@ -57,13 +56,13 @@ private:
 	SDRunoPlugin_cwskimmerUi m_form;
 	std::atomic<bool> 	running;
 	std::vector<elementHandler *> workVector;
+	int			fftSize;
 	int			width;
 	int			center;
 	int			lowEnd;
 	int			highEnd;
-
+	void			show_frequency	();
 	int			the_threshold;
 	float			the_avg;
-	float			blackmanWindow [FFT_SIZE];
 };
 

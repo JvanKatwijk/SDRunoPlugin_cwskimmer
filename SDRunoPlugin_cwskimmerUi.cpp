@@ -101,8 +101,8 @@ void	SDRunoPlugin_cwskimmerUi::set_width		(int n) {
 	m_parent. set_width	(n);
 }
 
-void	SDRunoPlugin_cwskimmerUi::set_center		(int n) {
-	m_parent. set_center	(n);
+void	SDRunoPlugin_cwskimmerUi::handle_modeSwitch	(int n) {
+	m_parent. handle_modeSwitch	(n);
 }
 
 void	SDRunoPlugin_cwskimmerUi::handle_threshold	(int n) {
@@ -115,9 +115,9 @@ void	SDRunoPlugin_cwskimmerUi::reset_width		(int n) {
 	   m_form -> reset_width (n);
 }
 
-void	SDRunoPlugin_cwskimmerUi::reset_center		(int n) {
+void	SDRunoPlugin_cwskimmerUi::show_frequencyRange	(int low, int high) {
 	std::lock_guard<std::mutex> l (m_lock);
-	if (m_form != nullptr)
-	   m_form -> reset_center (n);
+        if (m_form != nullptr)
+           m_form -> show_frequencyRange (low, high);
 }
 

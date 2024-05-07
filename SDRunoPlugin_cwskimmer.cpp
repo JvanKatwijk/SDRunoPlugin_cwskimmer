@@ -34,11 +34,7 @@
 	this	-> center	= NR_ELEMENTS / 2;
 	this	-> lowEnd	= center - 1;;
 	this	-> highEnd	= center + 1;
-
-	for (int i = 0; i < FFT_SIZE; i ++)
-	   blackmanWindow [i] = 6 * (0.42 -
-	              0.50 * cos(2 * M_PI * (float)i / (float)FFT_SIZE) +
-	              0.08 * cos(4 * M_PI * (float)i / (float)FFT_SIZE));
+	fftSize			= 1024;
 
 	the_avg			= 0;
 	the_threshold		= 0;
@@ -62,7 +58,8 @@
 void	SDRunoPlugin_cwskimmer::HandleEvent (const UnoEvent& ev) {
 	switch (ev. GetType ()) {
            case UnoEvent::FrequencyChanged:
-              break;
+	      show_frequency ();
+	      break;
 
            case UnoEvent::CenterFrequencyChanged:
               break;
@@ -98,9 +95,18 @@ void    SDRunoPlugin_cwskimmer::AudioProcessorProcess (channel_t channel,
 }
 
 void	SDRunoPlugin_cwskimmer::WorkerFunction	() {
-std::complex<float> ftBuffer [FFT_SIZE];
+std::vector<std::complex<float>> segment (fftSize);
+std::vector<std::complex<float>> ftBuffer (fftSize);
+std::vector<float> blackmanWindow (fftSize);
 float	l_avg	= 0;
-	int	binWidth	= 192000.0 / FFT_SIZE;
+	inputBuffer.FlushRingBuffer();
+	for (int i = 0; i < fftSize; i ++)
+	   blackmanWindow [i] = 6 * (0.42 -
+	              0.50 * cos(2 * M_PI * (float)i / (float)fftSize) +
+	              0.08 * cos(4 * M_PI * (float)i / (float)fftSize));
+	int	binWidth	= 192000.0 / fftSize;
+	reset();
+	show_frequency();
 	running. store (true);
 	while (running. load ()) {
 	   while (running.load() &&
@@ -108,22 +114,25 @@ float	l_avg	= 0;
 	      Sleep (1);
 
 //	we seem to have data, apply FFT
-	   inputBuffer.getDataFromBuffer (ftBuffer, 2 * 192);
-	   for (int i = 2 * 192; i < FFT_SIZE; i++)
-	      ftBuffer [i] = std::complex<float>(0, 0);
-	   for (int i = 0; i < FFT_SIZE; i ++)
-	      ftBuffer [i] = ftBuffer [i] * blackmanWindow [i];
-	   Fft_transform (ftBuffer, FFT_SIZE, false);
+	   for (int i = 0; i < fftSize - 2 * 192; i ++)
+	      ftBuffer [i] = ftBuffer [2 * 192 + i];
+	   inputBuffer.getDataFromBuffer (&ftBuffer [fftSize - 2 * 192],
+	                                              2 * 192);
+
+	   for (int i = 0; i < fftSize; i ++)
+	      segment [i] = ftBuffer [i] * blackmanWindow [i];
+	   
+	   Fft_transform (segment. data (), fftSize, false);
 	   for (int i = this -> lowEnd; i <= this -> highEnd; i ++)
-	      l_avg += abs (ftBuffer [(FFT_SIZE + (i - center)) % FFT_SIZE]);
+	      l_avg += abs (segment [(fftSize + (i - center)) % fftSize]);
 	   the_avg = 0.99 * the_avg + 0.01 * l_avg / (highEnd - lowEnd + 1);
 	   int selectedFreq = m_controller -> GetVfoFrequency (0);
 
 //	   processLocker. lock ();
 	   for (int i = this -> lowEnd; i <= this -> highEnd; i ++) {
 	      int freq = selectedFreq + (i - center) * binWidth;
-	      int index	= (FFT_SIZE + (i - center)) % FFT_SIZE;
-		  float sample = 2 * abs(ftBuffer[index]);
+	      int index	= (fftSize + (i - center)) % fftSize;
+		  float sample = 2 * abs(segment [index]);
 	      workVector [i] -> process (sample, freq, the_threshold);
 	   }
 //	   processLocker. unlock ();
@@ -131,67 +140,19 @@ float	l_avg	= 0;
 }
 
 void	SDRunoPlugin_cwskimmer::set_width	(int n) {
-int lowEnd_new, highEnd_new;
 
-	if (center < n / 2)
-	   return;
-	if (center >= NR_ELEMENTS - n / 2)
-	   return;
-
-//	processLocker. lock ();
 	if ((n & 01) != 0) {	// odd
-	   lowEnd_new	= center - n / 2;
-	   highEnd_new	= center + n / 2;
+	   lowEnd	= center - n / 2;
+	   highEnd	= center + n / 2;
 	}
 	else {
-	   lowEnd_new	= center - n / 2;
-	   highEnd_new	= center + n / 2 - 1;
+	   lowEnd	= center - n / 2;
+	   highEnd	= center + n / 2 - 1;
 	}
-
-	if (lowEnd_new > this -> lowEnd)
-	   for (int i = this -> lowEnd; i < lowEnd_new; i++)
-	      workVector [i] -> reset (0);
-
-	if (highEnd_new < this -> highEnd)
-	   for (int i = highEnd_new + 1; i <= this -> highEnd; i ++)
-	      workVector [i] -> reset (0);
 	this	-> width	= n;
-	this	-> lowEnd	= lowEnd_new;
-	this	-> highEnd	= highEnd_new;
+	show_frequency ();
 //	processLocker. unlock ();
 }
-
-void	SDRunoPlugin_cwskimmer::set_center (int n) { 
-int	lowEnd_new, highEnd_new;
-	
-	if (n < width / 2)
-	   return;
-	if (n >= NR_ELEMENTS - width / 2)
-	   return;
-
-//	processLocker. lock ();
-	if ((this -> width & 01) != 0) {	// odd
-	   lowEnd_new	= n - this -> width / 2;
-	   highEnd_new	= n + this -> width / 2;
-	}
-	else {
-	   lowEnd_new	= n - this -> width / 2;
-	   highEnd_new	= n + this -> width / 2 - 1;
-	}
-
-	if (lowEnd_new > this -> lowEnd)
-	   for (int i = this -> lowEnd; i < lowEnd_new; i++)
-	      workVector [i] -> reset (0);
-
-	if (highEnd_new < this -> highEnd)
-	   for (int i = highEnd_new + 1; i <= this -> highEnd; i ++)
-	      workVector [i] -> reset (0);
-	this	-> center	= n;
-	this	-> lowEnd	= lowEnd_new;
-	this	-> highEnd	= highEnd_new;
-//	processLocker. unlock ();
-}
-
 
 void	SDRunoPlugin_cwskimmer::reset	() {
 	for (int i = 0; i < NR_ELEMENTS; i ++)
@@ -209,5 +170,22 @@ void	SDRunoPlugin_cwskimmer::handle_resetButton	() {
 
 void	SDRunoPlugin_cwskimmer::handle_threshold	(int n) {
 	the_threshold	= n;
+}
+void	SDRunoPlugin_cwskimmer::show_frequency		() {
+int	selectedFreq	= m_controller -> GetVfoFrequency (0);
+int	binWidth	= 192000.0 / fftSize;
+int	lowFreq		= selectedFreq + (lowEnd - center) * binWidth;
+int	highFreq	= selectedFreq + (highEnd - center) * binWidth;
+
+	m_form. show_frequencyRange (lowFreq / 1000, highFreq / 1000);
+}
+
+void	SDRunoPlugin_cwskimmer::handle_modeSwitch (int s) {
+	running.store(false);
+	m_worker -> join ();
+//	delete m_worker;
+	fftSize	= s;
+	m_worker        =
+	         new std::thread (&SDRunoPlugin_cwskimmer::WorkerFunction, this);
 }
 
