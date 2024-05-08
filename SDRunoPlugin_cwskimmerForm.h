@@ -90,5 +90,7 @@ private:
 	nana::label	maxFreq		{*this,
 				   nana::rectangle (480, 30, 60, 50) };
 	nana::listbox	list	{*this,
-	                         nana::rectangle (30, 90, 750, 600)};
+	                           nana::rectangle (30, 90, 750, 600)};
+	nana::label copyRightLabel {*this,
+	                            nana::rectangle (550, 30, 20, 20) };
 };

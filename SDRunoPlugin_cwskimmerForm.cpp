@@ -286,7 +286,7 @@ void	SDRunoPlugin_cwskimmerForm::Setup () {
 	modeSelector. push_back ("2048");
 	modeSelector. option (1);
 	modeSelector. events(). selected ([&](const nana::arg_combox &ar_cbx){
-                        set_modeSelector (ar_cbx. widget. caption ());});
+	                set_modeSelector (ar_cbx. widget. caption ());});
 	modeSelector.tooltip("select between FFT sizes's");
 
 	list.append_header ("index", 40);
@@ -299,24 +299,26 @@ void	SDRunoPlugin_cwskimmerForm::Setup () {
 	}
 	resetButton. caption ("reset");
 	resetButton. tooltip ("Touching this button will clear the table");
-        resetButton. events().click([&]() {handle_resetButton (); });
+	resetButton. events().click([&]() {handle_resetButton (); });
 
 	width_setter. range (3, 30, 2);
 	width_setter. value (std::to_string (3));
 	width_setter.
-           events (). text_changed ([&](const nana::arg_spinbox &s) {
-                                      set_width (width_setter. to_int ());});
-        width_setter. tooltip ("set number of bins to show");
-        width_setter. bgcolor (nana::colors::black);
-        width_setter. fgcolor (nana::colors::white);
+	   events (). text_changed ([&](const nana::arg_spinbox &s) {
+	                              set_width (width_setter. to_int ());});
+	width_setter. tooltip ("set number of bins to show");
+	width_setter. bgcolor (nana::colors::black);
+	width_setter. fgcolor (nana::colors::white);
 
-	
 	threshold. range (0, 30, 1);
 	threshold. value (std::to_string (10));
 	threshold.
 	   events (). text_changed ([&](const nana::arg_spinbox &s) {
-                                      handle_threshold (threshold. to_int ());});
-
+	                              handle_threshold (threshold. to_int ());});
+	copyRightLabel. transparent (true);
+	copyRightLabel. fgcolor (nana::colors::white);
+	copyRightLabel. caption ("\xa9");
+	copyRightLabel. tooltip ("Created by Jan van Katwijk, allrights reserved");
 }
 
 void	SDRunoPlugin_cwskimmerForm::SettingsButton_Click () {
