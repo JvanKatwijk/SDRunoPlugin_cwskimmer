@@ -25,7 +25,7 @@ float   get_db (float x) {
 //
 	elementHandler::elementHandler (SDRunoPlugin_cwskimmerUi *mr,
 	                                int ident): 
-	                                    smoothenSamples (3) {
+	                                    smoothenSamples (4) {
 	this	-> m_form	= mr;
 	this	-> identity	= ident;
 	reset	();
@@ -51,7 +51,6 @@ void	elementHandler::reset	() {
 
 void	elementHandler::process	(float value, int freq, float threshold) {
 
-	threshold	= 0.1 * threshold;
 	value = smoothenSamples.filter (value);
 	if (starter < 500) {
 	   avg	= decayingAverage (avg, value, 500);
@@ -60,9 +59,6 @@ void	elementHandler::process	(float value, int freq, float threshold) {
 	   return;
 	}
 
-	avg	= decayingAverage (avg, value, 1000);
-	if (peakLevel == 0)
-	   peakLevel = 2 * avg;
 	if (value > 2 * avg)
 	   peakLevel = decayingAverage (peakLevel, value, 50.0);
 
@@ -75,44 +71,47 @@ void	elementHandler::process	(float value, int freq, float threshold) {
 	switch (cwState) {
 	   case MODE_IDLE:
 	      if ((value > 0.67 * peakLevel)  &&
-	          (get_db (value) > threshold + get_db (noiseLevel))) {
+	          (get_db (value) > get_db (avg) + threshold)) {
 	         currentPeak	= value;
 	         cwState	= MODE_IN_TONE;
 	         cwStartTime	= currentTime;;
+	         peakLevel	= decayingAverage (peakLevel, value, 100.0);
 	      }
-	      else 
-	         noiseLevel	= decayingAverage (noiseLevel,
-                                                           value, 500.0);
+	      else
+	         avg = decayingAverage (avg, value, 1000);
 	      break;
 
 	   case MODE_IN_TONE:
-//	      if (value > 0.33 * peakLevel)
-	      if (value > 0.5 * currentPeak)
-	         break;			/* kust go on	*/
+	      if (value > 2 * avg) {	// stay in tone
+	         if (value > currentPeak)
+	            currentPeak = value;
+	         peakLevel	= decayingAverage (peakLevel, value, 100.0);
+	         break;			/* just go on	*/
+	      }
 	      
 	      if (currentTime - cwStartTime < 3)	// a spike?
 	         break;		
 	
-	      noiseLevel	= decayingAverage (noiseLevel, value, 500.0);
 	      add (MODE_IN_TONE, currentTime - cwStartTime);
 	      cwState		= MODE_SPACE;
 	      cwStartTime	= currentTime;
+	      avg = decayingAverage (avg, value, 1000);
 	      break;
 
 	   case MODE_SPACE:
 	      if ((value >  0.67 * peakLevel ) &&
-	          (get_db (value) > threshold + get_db (noiseLevel))) {
-	         int duration = currentTime - cwStartTime;
-	         if (duration < 3)	// see it as noise
+	          (get_db (value) > get_db (avg) + threshold)) {
+	         if (currentTime - cwStartTime < 3)	// see it as noise
 	            break;
 	         currentPeak		= value;
-	         add (MODE_SPACE, duration);
+	         add (MODE_SPACE, currentTime - cwStartTime);
 	         cwState		= MODE_IN_TONE;
 	         cwStartTime		= currentTime;
+	         peakLevel		= decayingAverage (peakLevel,
+	                                              value, 100.0);
 	      }
 	      else
-	         noiseLevel	= decayingAverage (noiseLevel,
-                                                           value, 500.0);
+	         avg = decayingAverage (avg, value, 1000);
 	      break;
 
 	   default: ;
